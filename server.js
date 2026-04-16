@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
+const cron = require('node-cron');
 const tf = require('@tensorflow/tfjs');
 const use = require('@tensorflow-models/universal-sentence-encoder');
 
@@ -9,52 +11,67 @@ app.use(cors());
 
 let model;
 
-// دالة لتحميل الموديل مع الصبر على الإنترنت
+// 1. تحميل المخ الذكي
 async function initAI() {
     console.log("---------------------------------------");
-    console.log("جاري محاولة تجهيز مخ الذكاء الاصطناعي... 🧠");
-    console.log("ملاحظة: قد يستغرق هذا دقيقتين بسبب جودة الإنترنت");
-    
+    console.log("جاري تجهيز مخ الذكاء الاصطناعي... 🧠");
     try {
-        // زيادة وقت المحاولة
         model = await use.load();
         console.log("تم تحميل المخ بنجاح باهر يا حسين! ✅");
     } catch (err) {
-        console.log("❌ فشل التحميل بسبب الإنترنت، سأحاول مرة أخرى بعد 5 ثوانٍ...");
+        console.log("❌ فشل التحميل، سأحاول مجدداً...");
         setTimeout(initAI, 5000);
     }
-    console.log("---------------------------------------");
 }
 initAI();
 
+// 2. نقطة اتصال لمنع النوم (Ping)
+app.get('/ping', (req, res) => {
+    res.send('I am awake! 🧠');
+});
+
+// 3. البحث الذكي
 app.post('/ai-search', async (req, res) => {
     try {
         const { query, products } = req.body;
-        if (!model) return res.status(500).json({ error: "المخ لا يزال يحمل من الإنترنت، انتظر دقيقة" });
-
+        if (!model) return res.status(500).json({ error: "المخ يحمل.." });
         const productNames = products.map(p => p.name);
         const embeddings = await model.embed([query, ...productNames]);
         const vectors = await embeddings.array();
-
         const queryVector = vectors[0];
         const productVectors = vectors.slice(1);
-
         let results = products.map((product, index) => ({
             ...product,
             score: cosineSimilarity(queryVector, productVectors[index])
         }));
-
         results.sort((a, b) => b.score - a.score);
         res.json(results.slice(0, 15));
-    } catch (e) {
-        res.status(500).json({ error: "خطأ فني" });
-    }
+    } catch (e) { res.status(500).send("خطأ"); }
 });
 
 function cosineSimilarity(v1, v2) {
     let dot = 0, m1 = 0, m2 = 0;
-    for (let i = 0; i < v1.length; i++) { dot += v1[i] * v2[i]; m1 += v1[i] * v1[i]; m2 += v2[i] * v2[i]; }
+    for (let i = 0; i < v1.length; i++) {
+        dot += v1[i] * v2[i];
+        m1 += v1[i] * v1[i];
+        m2 += v2[i] * v2[i];
+    }
     return dot / (Math.sqrt(m1) * Math.sqrt(m2));
 }
 
-app.listen(3000, () => console.log("🚀 السيرفر شغال ومنتظر المخ على المنفذ 3000"));
+// 4. المجدول الخرافي (Cron Job)
+// مثال: يطبع في السجلات كل ساعة أن السيرفر يعمل وبصحة جيدة
+cron.schedule('0 * * * *', () => {
+    console.log('⏰ تنفيذ المهمة المجدولة: فحص حالة النظام ونشاط السيرفر...');
+});
+
+// 5. المنبه الذاتي (يشتغل كل 10 دقائق لضرب الـ Ping)
+setInterval(async () => {
+    try {
+        await axios.get('https://belad-ai-server.onrender.com/ping');
+        console.log('✅ تم إرسال نبضة حياة للسيرفر بنجاح');
+    } catch (e) { console.log('خطأ في نبضة الحياة'); }
+}, 600000);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 السيرفر الخرافي يعمل على المنفذ ${PORT}`));
