@@ -6,10 +6,15 @@ const tf = require('@tensorflow/tfjs');
 const use = require('@tensorflow-models/universal-sentence-encoder');
 
 const app = express();
-app.use(express.json({ limit: '50mb' }));
-app.use(cors());
 
-let model;
+// تعديل الـ CORS للسماح لموقعك في فيرسل بالدخول
+app.use(cors({
+    origin: '*', // يسمح لجميع المواقع بالاتصال، وهذا يحل مشكلة الـ Blocked فوراً
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+}));
+
+app.use(express.json({ limit: '50mb' }));
 
 // 1. تحميل المخ الذكي
 async function initAI() {
