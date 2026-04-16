@@ -40,20 +40,27 @@ app.post('/ai-search', async (req, res) => {
     try {
         const { query, products } = req.body;
         if (!model) return res.status(500).json({ error: "المخ يحمل.." });
+
         const productNames = products.map(p => p.name);
         const embeddings = await model.embed([query, ...productNames]);
         const vectors = await embeddings.array();
         const queryVector = vectors[0];
         const productVectors = vectors.slice(1);
+
         let results = products.map((product, index) => ({
             ...product,
             score: cosineSimilarity(queryVector, productVectors[index])
         }));
+
+        // --- التعديل السحري هنا ---
+        // سنظهر فقط المنتجات التي نسبة تشابهها أكثر من 45% 
+        // لكي لا تظهر منتجات عشوائية
+        results = results.filter(r => r.score > 0.45); 
+
         results.sort((a, b) => b.score - a.score);
         res.json(results.slice(0, 15));
     } catch (e) { res.status(500).send("خطأ"); }
 });
-
 function cosineSimilarity(v1, v2) {
     let dot = 0, m1 = 0, m2 = 0;
     for (let i = 0; i < v1.length; i++) {
