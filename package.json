@@ -1,8 +1,6 @@
 {
   "name": "belad-ai-api",
   "version": "1.0.0",
-  "description": "AI Search Server for Matajer Al-Bilad",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
