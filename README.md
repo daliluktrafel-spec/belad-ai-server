@@ -1,0 +1,2 @@
+# belad-ai-server
+السيرفر
