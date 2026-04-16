@@ -1,0 +1,15 @@
+{
+  "name": "belad-ai-api",
+  "version": "1.0.0",
+  "description": "AI Search Server for Matajer Al-Bilad",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@tensorflow-models/universal-sentence-encoder": "^1.3.3",
+    "@tensorflow/tfjs": "^4.22.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}
